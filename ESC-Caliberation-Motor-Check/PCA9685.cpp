@@ -3,6 +3,7 @@
 #include <wiringPiI2C.h>
 #include "PCA9685.h"
 
+// Module Init
 PCA9685::PCA9685(const int Addr)
 {
     I2C_FD = wiringPiI2CSetup(Addr);
@@ -19,7 +20,6 @@ int PCA9685::getFD()
 // Sets PCA9685 Module Mode to Normal Mode
 void PCA9685::setup()
 {
-
     wiringPiI2CWriteReg8(I2C_FD, MODE1, 0x00); // Normal mode
     wiringPiI2CWriteReg8(I2C_FD, MODE2, 0x04); // totem pole
 }
@@ -28,19 +28,19 @@ void PCA9685::setup()
 void PCA9685::setPWMFreq(int freq)
 {
     uint8_t prescale_val = (CLOCK_FREQ / 4096 / freq) - 1;
-    wiringPiI2CWriteReg8(I2C_FD, MODE1, 0x10);             // sleep
-    wiringPiI2CWriteReg8(I2C_FD, PRE_SCALE, prescale_val); // multiplyer for PWM frequency
-    wiringPiI2CWriteReg8(I2C_FD, MODE1, 0x80);             // restart
-    wiringPiI2CWriteReg8(I2C_FD, MODE2, 0x04);             // totem pole (default)
+    wiringPiI2CWriteReg8(I2C_FD, MODE1, 0x10);             // Sleep
+    wiringPiI2CWriteReg8(I2C_FD, PRE_SCALE, prescale_val); // Multiplyer for PWM Freq
+    wiringPiI2CWriteReg8(I2C_FD, MODE1, 0x80);             // Restart
+    wiringPiI2CWriteReg8(I2C_FD, MODE2, 0x04);             // Totem Pole (Default)
 }
 
-// Set PWM Signal of a Single Channel
+// Set PWM Signal for a Single Channel
 void PCA9685::setPWM(uint8_t pin, int val)
 {
     setPWM(pin, 0, val);
 }
 
-// Set PWM Signal of a Single Channel with Specific ON Time
+// Set PWM Signal for a Single Channel with Specific ON Time
 void PCA9685::setPWM(uint8_t pin, int on_value, int off_value)
 {
     wiringPiI2CWriteReg8(I2C_FD, PIN0_ON_L + PIN_MULTIPLYER * (pin - 1), on_value & 0xFF);
@@ -49,7 +49,7 @@ void PCA9685::setPWM(uint8_t pin, int on_value, int off_value)
     wiringPiI2CWriteReg8(I2C_FD, PIN0_OFF_H + PIN_MULTIPLYER * (pin - 1), off_value >> 8);
 }
 
-//! Get current PWM value
+// Get current PWM value
 int PCA9685::getPWM(uint8_t pin)
 {
     int val = 0;

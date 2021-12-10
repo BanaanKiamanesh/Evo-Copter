@@ -1,3 +1,4 @@
+// MOTOR DRIVER MODULE to Create PWM Modules
 #ifndef _PCA9685_H
 #define _PCA9685_H
 #include <inttypes.h>
@@ -22,7 +23,6 @@
 #define PRE_SCALE 0xFE        // prescaler for output frequency
 #define CLOCK_FREQ 25000000.0 // 25MHz default osc clock
 
-// Main class that exports features for PCA9685 chip
 class PCA9685
 {
 public:
