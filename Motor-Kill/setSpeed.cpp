@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     }
     else
     {
-        std::cerr << "Usage : " << argv[0] << " <name>\n";
+        std::cerr << "Usage : " << argv[0] << " <speed>\n";
         return 1;
     }
     return 0;
