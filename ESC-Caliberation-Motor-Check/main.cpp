@@ -8,7 +8,7 @@
 #define MAX_PWM 4095
 
 // Motor Pins properties
-const int pins[] = {1, 2, 15, 16};
+const int pins[] = {13, 14, 15, 16};
 
 int main()
 {
