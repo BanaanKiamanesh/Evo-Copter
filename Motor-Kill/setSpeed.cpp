@@ -22,7 +22,7 @@ int main(int argc, char **argv)
         }
 
         delay(250);
-        std::cout << "\nAll Chennels Set to " << speed << " Which is the Min DutyCycle\n\n";
+        std::cout << "\nAll Chennels Set to " << speed << std::endl;
     }
     else
     {
