@@ -1,6 +1,6 @@
 #include "PID.h"
 
-void PID::init(double Kp, double Ki, double Kd, double tau) // Constructor
+PID::PID(double Kp, double Ki, double Kd, double tau) // Constructor
 {
     this->Kp = Kp;
     this->Ki = Ki;
@@ -15,7 +15,7 @@ void PID::init(double Kp, double Ki, double Kd, double tau) // Constructor
     val = 0.0f;
 }
 
-void PID::init() // Constructor
+PID::PID() // Constructor
 {
     // Init to Zero
     integ = 0.0f;

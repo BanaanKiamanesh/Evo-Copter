@@ -12,8 +12,8 @@ private:
     double val;                              // PID output Value
 
 public:
-    void init(double, double, double, double);
-    void init();
+    PID(double, double, double, double);
+    PID();
     double update(double, double);
     void set_gains(double, double, double, double);
     double get_p();
