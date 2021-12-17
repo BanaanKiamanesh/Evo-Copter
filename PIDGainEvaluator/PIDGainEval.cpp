@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <wiringPi.h>
 #include <wiringPiI2C.h>
 #include "PCA9685.h"
@@ -50,6 +51,12 @@ int main(int argc, char **argv) // Main Func Input Seq: Throttle, K_p, K_i, K_d,
     const int pid_val_max = 800;              // Max PID Correction Val
     pid.set_bounds(pid_val_min, pid_val_max); // PID Correction Value Bounds
 
+    // Error Data Logs Save
+    int loop_counter = 0; // Indicates How Many Time the Loop Iterated!
+    const int arr_size = simulation_time * loop_freq;
+    float err_data[arr_size];
+    std::ofstream data("gain_err_data.txt");
+
     while (true) // Infinite Hardware Loop
     {
         if (current_time < 2)
@@ -65,8 +72,9 @@ int main(int argc, char **argv) // Main Func Input Seq: Throttle, K_p, K_i, K_d,
         else
             break;
 
-        angle = imu.read_angle(2);            // Update IMU Angle
-        pidVal = pid.update(setpoint, angle); // args ==> (setpoint, measurement)
+        angle = imu.read_angle(2);              // Update IMU Angle
+        pidVal = pid.update(setpoint, angle);   // args ==> (setpoint, measurement)
+        err_data[loop_counter] = pid.get_err(); // Save Error
 
         /* ONE Axis Motor Speed Mixing Algorithm */
         motor_speeds[0] = (int)throttle - pidVal;
@@ -86,17 +94,31 @@ int main(int argc, char **argv) // Main Func Input Seq: Throttle, K_p, K_i, K_d,
             pca.setPWM(motor_pins[i], motor_speeds[i]);
         }
 
-        std::cout << " PID = " << pidVal << " error = " << pid.get_err() << "  Motor Pair 1 = " << motor_speeds[1] << "  Motor Pair 2 = " << motor_speeds[3] << std::endl;
+        // Log Stats to the Console
+        // std::cout << " PID = " << pidVal << " error = " << pid.get_err() << "  Motor Pair 1 = " << motor_speeds[1] << "  Motor Pair 2 = " << motor_speeds[3] << std::endl;
+
         while (micros() - loop_timer < loop_time_us)
             ;
         loop_timer = micros();
         current_time += (double)loop_time_us / 1000000;
+        loop_counter++;
     }
 
     delay(250);
 
     for (int i = 0; i < 4; i++) // Kill the Motors
         pca.setPWM(motor_pins[i], 2048);
+
+    // Save Error Data to File
+    if (data.is_open())
+    {
+        for (int ii = 0; ii < arr_size; ii++)
+            data << err_data[ii] << "\n";
+
+        data.close();
+    }
+    else
+        std::cerr << "\n\nError : Unable to open file!\n\n";
 
     return 0;
 }

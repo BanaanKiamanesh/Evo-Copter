@@ -10,7 +10,7 @@ private:
     float lim_min, lim_max;                       // Output Limits
     float integ, prev_err, diff, prev_meas, prop; // Controller Memory
     float val;                                    // PID output Value
-    float err;                                    // Error
+    float err;                                    // Error (Setpoint - Measurement)
     float lim_min_integ, lim_max_integ;           // Anti Windup Integrator Limits
     float constrain(float, float, float);          // Function to Constrian a Value in Bounds
 
