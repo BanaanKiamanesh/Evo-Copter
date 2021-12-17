@@ -12,7 +12,7 @@ private:
     float val;                                    // PID output Value
     float err;                                    // Error (Setpoint - Measurement)
     float lim_min_integ, lim_max_integ;           // Anti Windup Integrator Limits
-    float constrain(float, float, float);          // Function to Constrian a Value in Bounds
+    float constrain(float, float, float);         // Function to Constrian a Value in Bounds
 
 public:
     void init(float, float, float, float, float);
