@@ -20,8 +20,8 @@ int main(int argc, char **argv) // Main Func Input Seq: Throttle, K_p, K_i, K_d,
 
     const int motor_pins[] = {13, 14, 15, 16}; // Motor Pins
     int motor_speeds[4];
-    int min_motor_speed = 2240;               // Min Available Motor Speed
-    int max_motor_speed = std::stoi(argv[6]); // Max Available Motor Speed
+    const int min_motor_speed = 2240;               // Min Available Motor Speed
+    const int max_motor_speed = std::stoi(argv[6]); // Max Available Motor Speed
 
     /* BNO055 IMU Initialization */
     BNO055 imu;
@@ -44,8 +44,11 @@ int main(int argc, char **argv) // Main Func Input Seq: Throttle, K_p, K_i, K_d,
 
     PID pid;
     pid.init(Kp, Ki, Kd, tau, loop_time_s);
-    float setpoint = 0;
-    float pidVal = 0;
+    float setpoint = 0;                       // PID Setpoint
+    float pidVal = 0;                         // PID Correction Val
+    const int pid_val_min = -800;             // Min PID Correction Val
+    const int pid_val_max = 800;              // Max PID Correction Val
+    pid.set_bounds(pid_val_min, pid_val_max); // PID Correction Value Bounds
 
     while (true) // Infinite Hardware Loop
     {
@@ -83,7 +86,7 @@ int main(int argc, char **argv) // Main Func Input Seq: Throttle, K_p, K_i, K_d,
             pca.setPWM(motor_pins[i], motor_speeds[i]);
         }
 
-        std::cout << " Angle = " << angle << " error = " << pid.get_err() << "  Motor Pair 1 = " << motor_speeds[1] << "  Motor Pair 2 = " << motor_speeds[3] << std::endl;
+        std::cout << " PID = " << pidVal << " error = " << pid.get_err() << "  Motor Pair 1 = " << motor_speeds[1] << "  Motor Pair 2 = " << motor_speeds[3] << std::endl;
         while (micros() - loop_timer < loop_time_us)
             ;
         loop_timer = micros();

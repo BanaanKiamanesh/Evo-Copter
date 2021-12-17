@@ -11,11 +11,14 @@ private:
     float integ, prev_err, diff, prev_meas, prop; // Controller Memory
     float val;                                    // PID output Value
     float err;                                    // Error
+    float lim_min_integ, lim_max_integ;           // Anti Windup Integrator Limits
+    float constrain(float, float, float);          // Function to Constrian a Value in Bounds
 
 public:
     void init(float, float, float, float, float);
     float update(float, float);
     void set_gains(float, float, float, float, float);
+    void set_bounds(float, float);
     float get_p();
     float get_i();
     float get_d();
