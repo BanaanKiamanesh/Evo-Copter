@@ -7,35 +7,25 @@
 
 int main(int argc, char **argv) // Main Func Input Seq: Throttle, K_p, K_i, K_d, Tau, Max Allowed Motor Speed
 {
-    if (argc != 6)
+    if (argc != 7)
     { // Error to Say That There is not Enough Input Arguments to the cmd!
-        std::cerr << "Usage: " << argv[0] << " <name> \n";
+        std::cerr << "Usage: " << argv[0] << " <Throttle> <K_p> <K_i> <K_d> <Tau> <Max_Speed> \n";
         return 1;
     }
 
     /* PCA9685 Motor Driver Initialization */
-    float throttle = std::stof(argv[1]);
-    PCA9685 pca = PCA9685();
+    int throttle = std::stoi(argv[1]);
+    PCA9685 pca;
     pca.setPWMFreq(500);
 
     const int motor_pins[] = {13, 14, 15, 16}; // Motor Pins
     int motor_speeds[4];
-    const int min_motor_speed = 2240;               // Min Available Motor Speed
-    const int max_motor_speed = std::stoi(argv[6]); // Max Available Motor Speed
+    int min_motor_speed = 2240;               // Min Available Motor Speed
+    int max_motor_speed = std::stoi(argv[6]); // Max Available Motor Speed
 
     /* BNO055 IMU Initialization */
-    BNO055 imu = BNO055();
+    BNO055 imu;
     float angle;
-
-    /* PID Control Properties Added */
-    double Kp = std::stod(argv[2]);  // p Gain
-    double Ki = std::stod(argv[3]);  // i Gain
-    double Kd = std::stod(argv[4]);  // d Gain
-    double tau = std::stod(argv[5]); // Tau
-
-    PID pid = PID(Kp, Ki, Kd, tau);
-    float setpoint = 0;
-    float pidVal = 0;
 
     /* Control Loop Properties */
     const double loop_freq = 100;                        // Control Loop Frequency
@@ -44,34 +34,42 @@ int main(int argc, char **argv) // Main Func Input Seq: Throttle, K_p, K_i, K_d,
     unsigned long loop_timer;                            // Loop Timer
     double current_time = 0;                             // Current Time in the Loop According to the Start Time
     loop_timer = micros();                               // Loop Timer Initialization
-    const float simulation_time = 7.5;                   // Simulation Time in Seconds
+    const float simulation_time = 10;                    // Simulation Time in Seconds
 
-    while (true)
+    /* PID Control Properties Added */
+    float Kp = std::stof(argv[2]);  // p Gain
+    float Ki = std::stof(argv[3]);  // i Gain
+    float Kd = std::stof(argv[4]);  // d Gain
+    float tau = std::stof(argv[5]); // Tau
+
+    PID pid;
+    pid.init(Kp, Ki, Kd, tau, loop_time_s);
+    float setpoint = 0;
+    float pidVal = 0;
+
+    while (true) // Infinite Hardware Loop
     {
-        if (current_time < 0)
-        {
-            std::cerr << "\nTerminate Due to an Error, Loop Time can not be negative!\n";
-            break;
-        }
-        else if (current_time < 1.5 || current_time > 0)
+        if (current_time < 2)
             setpoint = 0.0f;
-        else if (current_time < 3 || current_time > 1.5)
+        else if (current_time < 4)
             setpoint = 45.0f;
-        else if (current_time < 4.5 || current_time > 3)
+        else if (current_time < 6)
             setpoint = 0.0f;
-        else if (current_time < 6 || current_time > 4.5)
+        else if (current_time < 8)
             setpoint = -45.0f;
-        else if (current_time < 7.5 || current_time > 6)
+        else if (current_time < 10)
             setpoint = 0.0f;
+        else
+            break;
 
         angle = imu.read_angle(2);            // Update IMU Angle
         pidVal = pid.update(setpoint, angle); // args ==> (setpoint, measurement)
 
-        /* Motor Speed Mixing Algorithm */
-        motor_speeds[0] = throttle + pidVal;
-        motor_speeds[1] = throttle + pidVal;
-        motor_speeds[2] = throttle - pidVal;
-        motor_speeds[3] = throttle - pidVal;
+        /* ONE Axis Motor Speed Mixing Algorithm */
+        motor_speeds[0] = (int)throttle - pidVal;
+        motor_speeds[1] = (int)throttle - pidVal;
+        motor_speeds[2] = (int)throttle + pidVal;
+        motor_speeds[3] = (int)throttle + pidVal;
 
         // Constrain Motor Speeds and Set Speeds to the Motors
         for (int i = 0; i < 4; i++)
@@ -85,12 +83,17 @@ int main(int argc, char **argv) // Main Func Input Seq: Throttle, K_p, K_i, K_d,
             pca.setPWM(motor_pins[i], motor_speeds[i]);
         }
 
-        std::cout << "loop Timer is : " << loop_timer << " Angle = " << angle << std::endl;
+        std::cout << " Angle = " << angle << " error = " << pid.get_err() << "  Motor Pair 1 = " << motor_speeds[1] << "  Motor Pair 2 = " << motor_speeds[3] << std::endl;
         while (micros() - loop_timer < loop_time_us)
             ;
         loop_timer = micros();
         current_time += (double)loop_time_us / 1000000;
     }
+
+    delay(250);
+
+    for (int i = 0; i < 4; i++) // Kill the Motors
+        pca.setPWM(motor_pins[i], 2048);
 
     return 0;
 }

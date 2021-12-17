@@ -4,21 +4,22 @@
 class PID
 {
 private:
-    double Kp, Ki, Kd;                       // Controller Gains
-    double tau;                              // Dericative low-pass Filter Time Const
-    double T;                                // Sampling Time
-    double lim_min, lim_max;                 // Output Limits
-    double integ, prev_err, diff, prev_meas; // Controller Memory
-    double val;                              // PID output Value
+    float Kp, Ki, Kd;                             // Controller Gains
+    float tau;                                    // Dericative low-pass Filter Time Const
+    float T;                                      // Sampling Time
+    float lim_min, lim_max;                       // Output Limits
+    float integ, prev_err, diff, prev_meas, prop; // Controller Memory
+    float val;                                    // PID output Value
+    float err;                                    // Error
 
 public:
-    PID(double, double, double, double);
-    PID();
-    double update(double, double);
-    void set_gains(double, double, double, double);
-    double get_p();
-    double get_i();
-    double get_d();
-    double get_tau();
+    void init(float, float, float, float, float);
+    float update(float, float);
+    void set_gains(float, float, float, float, float);
+    float get_p();
+    float get_i();
+    float get_d();
+    float get_tau();
+    float get_err();
 };
 #endif

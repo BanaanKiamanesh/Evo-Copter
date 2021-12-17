@@ -1,11 +1,12 @@
 #include "PID.h"
 
-PID::PID(double Kp, double Ki, double Kd, double tau) // Constructor
+void PID::init(float Kp, float Ki, float Kd, float tau, float T) // Constructor
 {
     this->Kp = Kp;
     this->Ki = Ki;
     this->Kd = Kd;
     this->tau = tau;
+    this->T = T;
 
     // Init to Zero
     integ = 0.0f;
@@ -15,29 +16,19 @@ PID::PID(double Kp, double Ki, double Kd, double tau) // Constructor
     val = 0.0f;
 }
 
-PID::PID() // Constructor
-{
-    // Init to Zero
-    integ = 0.0f;
-    diff = 0.0f;
-    prev_err = 0.0f;
-    prev_meas = 0.0f;
-    val = 0.0f;
-}
-
-double PID::update(double setpoint, double meas) // Calculate PID
+float PID::update(float setpoint, float meas) // Calculate PID
 {
     // Error Signal
-    double err = setpoint - meas;
+    err = setpoint - meas;
 
     // Proportional Term
-    double prop = Kp * err;
+    prop = Kp * err;
 
     // Integral Term
     integ += 0.5f * Ki * T * (err + prev_err);
 
     // Anti-wind-up via Dynamic Integrator Clamping
-    double lim_min_integ, lim_max_integ;
+    float lim_min_integ, lim_max_integ;
 
     // Compute Limits
     if (lim_max > prop)
@@ -53,6 +44,7 @@ double PID::update(double setpoint, double meas) // Calculate PID
     // Constrain Integrator
     if (integ > lim_max_integ)
         integ = lim_max_integ;
+
     else if (integ < lim_min_integ)
         integ = lim_min_integ;
 
@@ -75,30 +67,36 @@ double PID::update(double setpoint, double meas) // Calculate PID
     return val;
 }
 
-void PID::set_gains(double Kp, double Ki, double Kd, double tau)
+void PID::set_gains(float Kp, float Ki, float Kd, float tau, float T)
 {
     this->Kp = Kp;
     this->Ki = Ki;
     this->Kd = Kd;
     this->tau = tau;
+    this->T = T;
 }
 
-double PID::get_p()
+float PID::get_p()
 {
     return Kp;
 }
 
-double PID::get_i()
+float PID::get_i()
 {
     return Ki;
 }
 
-double PID::get_d()
+float PID::get_d()
 {
     return Kd;
 }
 
-double PID::get_tau()
+float PID::get_tau()
 {
     return tau;
+}
+
+float PID::get_err()
+{
+    return err;
 }
