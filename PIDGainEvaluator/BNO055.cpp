@@ -115,7 +115,7 @@ float BNO055::read_angle(int type)
     3: Yaw
     */
 
-    vector angles = read_euler2();
+    vector angles = read_euler();
     float angle;
     switch (type)
     {

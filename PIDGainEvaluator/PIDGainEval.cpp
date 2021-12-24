@@ -19,14 +19,14 @@ int main(int argc, char **argv) // Main Func Input Seq: Throttle, K_p, K_i, K_d,
     PCA9685 pca;
     pca.setPWMFreq(500);
 
-    const int motor_pins[] = {13, 14, 15, 16}; // Motor Pins
-    int motor_speeds[4];
+    const int motor_pins[] = {14, 16}; // Motor Pins
+    int motor_speeds[2];
     const int min_motor_speed = 2240;               // Min Available Motor Speed
     const int max_motor_speed = std::stoi(argv[6]); // Max Available Motor Speed
 
     /* BNO055 IMU Initialization */
     BNO055 imu;
-    float angle;
+    float angle = 0;
 
     /* Control Loop Properties */
     const double loop_freq = 100;                        // Control Loop Frequency
@@ -35,7 +35,7 @@ int main(int argc, char **argv) // Main Func Input Seq: Throttle, K_p, K_i, K_d,
     unsigned long loop_timer;                            // Loop Timer
     double current_time = 0;                             // Current Time in the Loop According to the Start Time
     loop_timer = micros();                               // Loop Timer Initialization
-    const float simulation_time = 10;                    // Simulation Time in Seconds
+    const float simulation_time = 5;                    // Simulation Time in Seconds
 
     /* PID Control Properties Added */
     float Kp = std::stof(argv[2]);  // p Gain
@@ -55,35 +55,25 @@ int main(int argc, char **argv) // Main Func Input Seq: Throttle, K_p, K_i, K_d,
     int loop_counter = 0; // Indicates How Many Time the Loop Iterated!
     const int arr_size = simulation_time * loop_freq;
     float err_data[arr_size];
-    std::ofstream data("gain_err_data.txt");
+    std::ofstream data("pid_gain_err.txt");
 
     while (true) // Infinite Hardware Loop
     {
-        if (current_time < 2)
-            setpoint = 0.0f;
-        else if (current_time < 4)
-            setpoint = 45.0f;
-        else if (current_time < 6)
-            setpoint = 0.0f;
-        else if (current_time < 8)
-            setpoint = -45.0f;
-        else if (current_time < 10)
-            setpoint = 0.0f;
+        if (current_time < 5)
+            setpoint = 30.0f;
         else
             break;
 
-        angle = imu.read_angle(2);              // Update IMU Angle
-        pidVal = pid.update(setpoint, angle);   // args ==> (setpoint, measurement)
-        err_data[loop_counter] = pid.get_err(); // Save Error
+        angle = imu.read_angle(2);            // Update IMU Angle
+        pidVal = pid.update(setpoint, angle); // args ==> (setpoint, measurement)
+        err_data[loop_counter] = setpoint;    // Save Error
 
         /* ONE Axis Motor Speed Mixing Algorithm */
         motor_speeds[0] = (int)throttle - pidVal;
-        motor_speeds[1] = (int)throttle - pidVal;
-        motor_speeds[2] = (int)throttle + pidVal;
-        motor_speeds[3] = (int)throttle + pidVal;
+        motor_speeds[1] = (int)throttle + pidVal;
 
         // Constrain Motor Speeds and Set Speeds to the Motors
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 2; i++)
         {
             if (motor_speeds[i] < min_motor_speed)
                 motor_speeds[i] = min_motor_speed;
@@ -95,7 +85,7 @@ int main(int argc, char **argv) // Main Func Input Seq: Throttle, K_p, K_i, K_d,
         }
 
         // Log Stats to the Console
-        // std::cout << " PID = " << pidVal << " error = " << pid.get_err() << "  Motor Pair 1 = " << motor_speeds[1] << "  Motor Pair 2 = " << motor_speeds[3] << std::endl;
+        std::cout << " Angle = " << angle << " PID = " << pidVal << " error = " << pid.get_err() << "  Motor Pair 1 = " << motor_speeds[0] << "  Motor Pair 2 = " << motor_speeds[1] << std::endl;
 
         while (micros() - loop_timer < loop_time_us)
             ;
@@ -104,9 +94,9 @@ int main(int argc, char **argv) // Main Func Input Seq: Throttle, K_p, K_i, K_d,
         loop_counter++;
     }
 
-    delay(250);
+    delay(100);
 
-    for (int i = 0; i < 4; i++) // Kill the Motors
+    for (int i = 0; i < 2; i++) // Kill the Motors
         pca.setPWM(motor_pins[i], 2048);
 
     // Save Error Data to File
