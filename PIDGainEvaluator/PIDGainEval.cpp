@@ -72,7 +72,7 @@ int main(int argc, char **argv) // Main Func Input Seq: Throttle, K_p, K_i, K_d,
     {
         if (current_time < 5)
         {
-            setpoint = 30.0f;
+            setpoint = 0.0f;
 
             if (current_time > 1.5) // Dont Let the Error Grow too Much!
                 if (abs(setpoint - abs(angle)) >= max_overshoot)
