@@ -81,6 +81,9 @@ int main(int argc, char **argv) // Main Func Input Seq: Throttle, K_p, K_i, K_d,
         else
             break;
 
+        /* Sequences have to be done separately for each axis! */
+
+        /////////////////////////////* Roll Axis *////////////////////////////////////
         angle = imu.read_angle(2);            // Update IMU Angle
         pidVal = pid.update(setpoint, angle); // args ==> (setpoint, measurement)
         err_data[loop_counter] = angle;       // Save Error
@@ -88,6 +91,28 @@ int main(int argc, char **argv) // Main Func Input Seq: Throttle, K_p, K_i, K_d,
         /* ONE Axis Motor Speed Mixing Algorithm */
         motor_speeds[0] = (int)throttle - pidVal;
         motor_speeds[1] = (int)throttle + pidVal;
+
+        /////////////////////////////* Pitch Axis *////////////////////////////////////
+        // angle = imu.read_angle(1);            // Update IMU Angle
+        // pidVal = pid.update(setpoint, angle); // args ==> (setpoint, measurement)
+        // err_data[loop_counter] = angle;       // Save Error
+
+        // /* ONE Axis Motor Speed Mixing Algorithm */
+        // // Change Motor Pins into {13, 15}
+        // motor_speeds[0] = (int)throttle - pidVal;
+        // motor_speeds[1] = (int)throttle + pidVal;
+
+        /////////////////////////////* Yaw Axis *////////////////////////////////////
+        // angle = imu.read_angle(3);            // Update IMU Angle
+        // pidVal = pid.update(setpoint, angle); // args ==> (setpoint, measurement)
+        // err_data[loop_counter] = angle;       // Save Error
+
+        // /* ONE Axis Motor Speed Mixing Algorithm */
+        // // Change Motor Pins into {13, 14, 15, 16}
+        // motor_speeds[0] = (int)throttle - pidVal;
+        // motor_speeds[1] = (int)throttle + pidVal;
+        // motor_speeds[2] = (int)throttle - pidVal;
+        // motor_speeds[3] = (int)throttle + pidVal;
 
         // Constrain Motor Speeds and Set Speeds to the Motors
         for (int i = 0; i < 2; i++)
@@ -102,7 +127,7 @@ int main(int argc, char **argv) // Main Func Input Seq: Throttle, K_p, K_i, K_d,
         }
 
         // Log Status to the Console
-        std::cout << "Angle = " << angle << "\tPID = " << pidVal << "\terror = " << pid.get_err() << "\tMotor Pair 1 = " << motor_speeds[0] << "\tMotor Pair 2 = " << motor_speeds[1] << std::endl;
+        //        std::cout << "Angle = " << angle << "\tPID = " << pidVal << "\terror = " << pid.get_err() << "\tMotor Pair 1 = " << motor_speeds[0] << "\tMotor Pair 2 = " << motor_speeds[1] << std::endl;
 
         while (micros() - loop_timer < loop_time_us) // Add Enough Delay to make the Contol Loop Exec in the Specified Time
             ;
